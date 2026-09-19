@@ -1,6 +1,884 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SecureUPI AI | Bulk Scan</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body><div class="noise"></div><div class="glow glow-cyan"></div><div class="glow glow-purple"></div>
-<nav><a href="/" class="brand"><span class="brand-icon">⌁</span><span><strong>SecureUPI</strong><small>AI SECURITY</small></span></a><div class="nav-links"><a href="/">Overview</a><a href="/dashboard">Analytics</a><a href="/bulk" class="active">Bulk Scan</a><button class="toggle-btn" data-theme-toggle aria-label="Toggle theme">☀️</button></div></nav>
-<main class="page subpage"><section class="subpage-hero"><div><div class="eyebrow"><span class="pulse"></span> BATCH ANALYSIS</div><h1>Scan transactions<br><span>at scale.</span></h1><p>Upload a CSV and let the SecureUPI engine evaluate multiple transactions in one run.</p></div><div class="analytics-badge"><span>BATCH ENGINE</span><strong>● READY</strong><small>CSV pipeline connected</small></div></section>
-<section class="bulk-bento"><article class="tile upload-tile"><div class="tile-head"><div><span class="overline">BULK SCANNER</span><h2>Upload transaction data</h2></div><div class="ai-chip">CSV • ML</div></div><form method="POST" enctype="multipart/form-data" id="bulkForm"><div class="drop-zone" id="dropZone"><div class="upload-orb">↑</div><h3>Drop your CSV here</h3><p>or click anywhere in this area to browse</p><div class="file-name" id="fileName">No file selected</div></div><input id="fileInput" type="file" name="file" accept=".csv,text/csv" required><button class="analyze-btn" type="submit"><span>Scan transactions</span><b>→</b></button></form><div class="upload-note"><span>⌁</span><span>CSV files are processed by your existing fraud-detection pipeline.</span></div></article>
-<article class="tile bulk-status"><span class="overline">WORKFLOW</span><div class="workflow"><div class="workflow-step active"><b>01</b><span>Upload CSV</span></div><div class="workflow-line"></div><div class="workflow-step"><b>02</b><span>Analyze</span></div><div class="workflow-line"></div><div class="workflow-step"><b>03</b><span>Review</span></div></div><div class="mini-status"><span class="live-dot"></span><div><b>Scanner ready</b><small>Waiting for a dataset</small></div></div></article>
-{% if total %}<article class="tile bulk-total"><span class="overline">TOTAL SCANNED</span><strong>{{ total }}</strong><span class="stat-caption">transactions processed</span></article><article class="tile bulk-medium"><span class="overline">MEDIUM RISK</span><strong>{{ medium }}</strong><span class="stat-caption">transactions flagged</span></article><article class="tile bulk-high"><span class="overline">HIGH RISK</span><strong>{{ high }}</strong><span class="stat-caption">transactions flagged</span></article><article class="tile bulk-breakdown"><span class="overline">RISK BREAKDOWN</span><div class="bulk-bars"><div><span>Medium</span><i><b style="width:{{ ((medium/total)*100 if total else 0)|round(1) }}%"></b></i><em>{{ medium }}</em></div><div><span>High</span><i><b class="high-bar" style="width:{{ ((high/total)*100 if total else 0)|round(1) }}%"></b></i><em>{{ high }}</em></div></div></article>{% else %}<article class="tile bulk-info"><span class="overline">WHAT IT DOES</span><strong>One upload.<br>Multiple checks.</strong><p>Your CSV is passed through the same bulk-analysis workflow already connected to the app.</p></article><article class="tile bulk-info"><span class="overline">SUPPORTED FORMAT</span><div class="format-icon">CSV</div><strong>Comma-separated data</strong><p>Choose a .csv file from your computer to begin the batch scan.</p></article>{% endif %}</section><footer><span>SecureUPI AI</span><span>Bulk transaction security</span></footer></main><script src="{{ url_for('static', filename='script.js') }}"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureUPI AI | Bulk Scan</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="noise"></div>
+<div class="glow glow-cyan"></div>
+<div class="glow glow-purple"></div>
+
+<nav>
+    <a href="/" class="brand">
+        <span class="brand-icon">⌁</span>
+        <span>
+            <strong>SecureUPI</strong>
+            <small>AI SECURITY</small>
+        </span>
+    </a>
+
+    <div class="nav-links">
+        <a href="/">Overview</a>
+        <a href="/dashboard">Analytics</a>
+        <a href="/bulk" class="active">Bulk Scan</a>
+        <button class="toggle-btn" data-theme-toggle aria-label="Toggle theme">☀️</button>
+    </div>
+</nav>
+
+
+<main class="page subpage">
+
+<section class="subpage-hero">
+
+    <div>
+        <div class="eyebrow">
+            <span class="pulse"></span>
+            BATCH ANALYSIS
+        </div>
+
+        <h1>
+            Scan transactions<br>
+            <span>at scale.</span>
+        </h1>
+
+        <p>
+            Upload a CSV and let the SecureUPI engine evaluate multiple
+            transactions in one run.
+        </p>
+    </div>
+
+    <div class="analytics-badge">
+        <span>BATCH ENGINE</span>
+        <strong>● READY</strong>
+        <small>CSV pipeline connected</small>
+    </div>
+
+</section>
+
+
+<section class="bulk-bento">
+
+
+<!-- ===================================================== -->
+<!-- UPLOAD -->
+<!-- ===================================================== -->
+
+<article class="tile upload-tile">
+
+    <div class="tile-head">
+
+        <div>
+            <span class="overline">BULK SCANNER</span>
+            <h2>Upload transaction data</h2>
+        </div>
+
+        <div class="ai-chip">
+            CSV • ML
+        </div>
+
+    </div>
+
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        id="bulkForm"
+    >
+
+        <div
+            class="drop-zone"
+            id="dropZone"
+        >
+
+            <div class="upload-orb">
+                ↑
+            </div>
+
+            <h3>
+                Drop your CSV here
+            </h3>
+
+            <p>
+                or click anywhere in this area to browse
+            </p>
+
+            <div
+                class="file-name"
+                id="fileName"
+            >
+                No file selected
+            </div>
+
+        </div>
+
+
+        <input
+            id="fileInput"
+            type="file"
+            name="file"
+            accept=".csv,text/csv"
+            required
+        >
+
+
+        <button
+            class="analyze-btn"
+            type="submit"
+            id="scanButton"
+        >
+            <span id="scanButtonText">
+                Scan transactions
+            </span>
+
+            <b id="scanArrow">
+                →
+            </b>
+        </button>
+
+    </form>
+
+
+    <div class="upload-note">
+        <span>⌁</span>
+
+        <span>
+            Large datasets are automatically sampled in your browser
+            before being sent to the SecureUPI server.
+        </span>
+    </div>
+
+
+    <!-- PROCESSING MESSAGE -->
+
+    <div
+        id="processingBox"
+        style="
+            display:none;
+            margin-top:18px;
+            padding:16px;
+            border-radius:14px;
+            background:rgba(124,92,255,.10);
+            border:1px solid rgba(124,92,255,.25);
+        "
+    >
+
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:12px;
+        ">
+
+            <div style="
+                width:18px;
+                height:18px;
+                border:2px solid rgba(255,255,255,.2);
+                border-top-color:#7c5cff;
+                border-radius:50%;
+                animation:spin .8s linear infinite;
+            "></div>
+
+            <div>
+
+                <strong id="processingTitle">
+                    Preparing transactions...
+                </strong>
+
+                <small
+                    id="processingText"
+                    style="
+                        display:block;
+                        margin-top:4px;
+                        opacity:.65;
+                    "
+                >
+                    Reading your CSV locally
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</article>
+
+
+
+<!-- ===================================================== -->
+<!-- WORKFLOW -->
+<!-- ===================================================== -->
+
+<article class="tile bulk-status">
+
+    <span class="overline">
+        WORKFLOW
+    </span>
+
+    <div class="workflow">
+
+        <div class="workflow-step active">
+            <b>01</b>
+            <span>Upload CSV</span>
+        </div>
+
+        <div class="workflow-line"></div>
+
+        <div class="workflow-step">
+            <b>02</b>
+            <span>Analyze</span>
+        </div>
+
+        <div class="workflow-line"></div>
+
+        <div class="workflow-step">
+            <b>03</b>
+            <span>Review</span>
+        </div>
+
+    </div>
+
+
+    <div class="mini-status">
+
+        <span class="live-dot"></span>
+
+        <div>
+            <b>Scanner ready</b>
+
+            <small>
+                Waiting for a dataset
+            </small>
+        </div>
+
+    </div>
+
+</article>
+
+
+
+<!-- ===================================================== -->
+<!-- RESULTS -->
+<!-- ===================================================== -->
+
+{% if total %}
+
+<article class="tile bulk-total">
+
+    <span class="overline">
+        TOTAL SCANNED
+    </span>
+
+    <strong>
+        {{ total }}
+    </strong>
+
+    <span class="stat-caption">
+        transactions processed
+    </span>
+
+</article>
+
+
+<article class="tile bulk-medium">
+
+    <span class="overline">
+        MEDIUM RISK
+    </span>
+
+    <strong>
+        {{ medium }}
+    </strong>
+
+    <span class="stat-caption">
+        transactions flagged
+    </span>
+
+</article>
+
+
+<article class="tile bulk-high">
+
+    <span class="overline">
+        HIGH RISK
+    </span>
+
+    <strong>
+        {{ high }}
+    </strong>
+
+    <span class="stat-caption">
+        transactions flagged
+    </span>
+
+</article>
+
+
+<article class="tile bulk-breakdown">
+
+    <span class="overline">
+        RISK BREAKDOWN
+    </span>
+
+    <div class="bulk-bars">
+
+        <div>
+
+            <span>Medium</span>
+
+            <i>
+                <b
+                    style="width:{{ ((medium/total)*100 if total else 0)|round(1) }}%"
+                ></b>
+            </i>
+
+            <em>
+                {{ medium }}
+            </em>
+
+        </div>
+
+
+        <div>
+
+            <span>High</span>
+
+            <i>
+                <b
+                    class="high-bar"
+                    style="width:{{ ((high/total)*100 if total else 0)|round(1) }}%"
+                ></b>
+            </i>
+
+            <em>
+                {{ high }}
+            </em>
+
+        </div>
+
+    </div>
+
+</article>
+
+
+{% else %}
+
+
+<!-- ===================================================== -->
+<!-- INFORMATION -->
+<!-- ===================================================== -->
+
+<article class="tile bulk-info">
+
+    <span class="overline">
+        WHAT IT DOES
+    </span>
+
+    <strong>
+        One upload.<br>
+        Multiple checks.
+    </strong>
+
+    <p>
+        Your CSV is passed through the same bulk-analysis workflow
+        already connected to the app.
+    </p>
+
+</article>
+
+
+<article class="tile bulk-info">
+
+    <span class="overline">
+        SUPPORTED FORMAT
+    </span>
+
+    <div class="format-icon">
+        CSV
+    </div>
+
+    <strong>
+        Comma-separated data
+    </strong>
+
+    <p>
+        Choose a .csv file from your computer to begin the batch scan.
+    </p>
+
+</article>
+
+{% endif %}
+
+
+<!-- ===================================================== -->
+<!-- ERROR -->
+<!-- ===================================================== -->
+
+{% if error %}
+
+<article
+    class="tile bulk-info"
+    style="
+        border-color:rgba(255,85,113,.35);
+    "
+>
+
+    <span class="overline">
+        SCAN ERROR
+    </span>
+
+    <strong>
+        Unable to process file
+    </strong>
+
+    <p>
+        {{ error }}
+    </p>
+
+</article>
+
+{% endif %}
+
+
+</section>
+
+
+<footer>
+    <span>SecureUPI AI</span>
+    <span>Bulk transaction security</span>
+</footer>
+
+</main>
+
+
+
+<!-- ===================================================== -->
+<!-- LOADING ANIMATION -->
+<!-- ===================================================== -->
+
+<style>
+
+@keyframes spin {
+
+    from {
+        transform:rotate(0deg);
+    }
+
+    to {
+        transform:rotate(360deg);
+    }
+
+}
+
+</style>
+
+
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
+
+<!-- ===================================================== -->
+<!-- SMART BULK UPLOAD -->
+<!-- ===================================================== -->
+
+<script>
+
+(function () {
+
+    const form = document.getElementById("bulkForm");
+    const fileInput = document.getElementById("fileInput");
+    const dropZone = document.getElementById("dropZone");
+    const fileName = document.getElementById("fileName");
+
+    const processingBox =
+        document.getElementById("processingBox");
+
+    const processingTitle =
+        document.getElementById("processingTitle");
+
+    const processingText =
+        document.getElementById("processingText");
+
+    const scanButton =
+        document.getElementById("scanButton");
+
+    const scanButtonText =
+        document.getElementById("scanButtonText");
+
+    const scanArrow =
+        document.getElementById("scanArrow");
+
+
+    const MAX_ROWS = 5000;
+
+
+    /* ================================================
+       FILE DISPLAY
+       ================================================ */
+
+    function updateFileName() {
+
+        if (
+            fileInput.files &&
+            fileInput.files.length > 0
+        ) {
+
+            const file = fileInput.files[0];
+
+            fileName.textContent =
+                file.name +
+                " • " +
+                (file.size / 1024 / 1024).toFixed(1) +
+                " MB";
+
+        }
+
+    }
+
+
+    fileInput.addEventListener(
+        "change",
+        updateFileName
+    );
+
+
+    /* ================================================
+       DRAG & DROP
+       ================================================ */
+
+    dropZone.addEventListener(
+        "click",
+        function () {
+
+            fileInput.click();
+
+        }
+    );
+
+
+    dropZone.addEventListener(
+        "dragover",
+        function (event) {
+
+            event.preventDefault();
+
+            dropZone.classList.add("dragover");
+
+        }
+    );
+
+
+    dropZone.addEventListener(
+        "dragleave",
+        function () {
+
+            dropZone.classList.remove("dragover");
+
+        }
+    );
+
+
+    dropZone.addEventListener(
+        "drop",
+        function (event) {
+
+            event.preventDefault();
+
+            dropZone.classList.remove("dragover");
+
+            if (
+                event.dataTransfer.files &&
+                event.dataTransfer.files.length
+            ) {
+
+                fileInput.files =
+                    event.dataTransfer.files;
+
+                updateFileName();
+
+            }
+
+        }
+    );
+
+
+    /* ================================================
+       READ ONLY FIRST 5000 TRANSACTIONS
+       ================================================ */
+
+    async function createSample(file) {
+
+        const reader =
+            file.stream().getReader();
+
+        const decoder =
+            new TextDecoder("utf-8");
+
+        let buffer = "";
+
+        let lines = [];
+
+        let finished = false;
+
+
+        while (!finished && lines.length < MAX_ROWS + 1) {
+
+            const result =
+                await reader.read();
+
+            if (result.done) {
+
+                finished = true;
+
+            } else {
+
+                buffer +=
+                    decoder.decode(
+                        result.value,
+                        { stream: true }
+                    );
+
+
+                const parts =
+                    buffer.split("\n");
+
+
+                buffer =
+                    parts.pop();
+
+
+                for (const part of parts) {
+
+                    lines.push(
+                        part.replace(/\r$/, "")
+                    );
+
+                    if (
+                        lines.length >=
+                        MAX_ROWS + 1
+                    ) {
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        if (
+            buffer &&
+            lines.length < MAX_ROWS + 1
+        ) {
+
+            lines.push(
+                buffer.replace(/\r$/, "")
+            );
+
+        }
+
+
+        if (lines.length < 2) {
+
+            throw new Error(
+                "The CSV file appears to be empty."
+            );
+
+        }
+
+
+        /*
+         * First line = headers
+         * Next 5000 lines = transactions
+         */
+
+        const selected =
+            lines.slice(
+                0,
+                MAX_ROWS + 1
+            );
+
+
+        return new Blob(
+            [
+                selected.join("\n")
+            ],
+            {
+                type: "text/csv"
+            }
+        );
+
+    }
+
+
+    /* ================================================
+       SUBMIT
+       ================================================ */
+
+    form.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            const file =
+                fileInput.files[0];
+
+
+            if (!file) {
+
+                alert(
+                    "Please select a CSV file first."
+                );
+
+                return;
+
+            }
+
+
+            try {
+
+                /* Disable button */
+
+                scanButton.disabled = true;
+
+                scanButtonText.textContent =
+                    "Preparing...";
+
+                scanArrow.textContent =
+                    "⏳";
+
+
+                processingBox.style.display =
+                    "block";
+
+
+                processingTitle.textContent =
+                    "Preparing transactions...";
+
+
+                processingText.textContent =
+                    "Reading the CSV locally";
+
+
+                /*
+                 * Create small browser-side sample.
+                 */
+
+                const sample =
+                    await createSample(file);
+
+
+                processingTitle.textContent =
+                    "Uploading sample...";
+
+
+                processingText.textContent =
+                    "Sending up to 5,000 transactions to SecureUPI";
+
+
+                /*
+                 * Create FormData.
+                 */
+
+                const formData =
+                    new FormData();
+
+
+                formData.append(
+                    "file",
+                    sample,
+                    "secureupi_sample.csv"
+                );
+
+
+                /*
+                 * Send ONLY the small sample
+                 * to Flask/Vercel.
+                 */
+
+                const response =
+                    await fetch(
+                        "/bulk",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+
+                processingTitle.textContent =
+                    "Analyzing transactions...";
+
+
+                processingText.textContent =
+                    "SecureUPI AI is running the fraud model";
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Server returned " +
+                        response.status
+                    );
+
+                }
+
+
+                const html =
+                    await response.text();
+
+
+                /*
+                 * Replace current page with
+                 * Flask results.
+                 */
+
+                document.open();
+
+                document.write(html);
+
+                document.close();
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                processingTitle.textContent =
+                    "Scan failed";
+
+                processingText.textContent =
+                    error.message ||
+                    "Something went wrong.";
+
+                scanButton.disabled = false;
+
+                scanButtonText.textContent =
+                    "Try again";
+
+                scanArrow.textContent =
+                    "→";
+
+            }
+
+        }
+    );
+
+})();
+
+</script>
+
+</body>
+</html>
